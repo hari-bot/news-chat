@@ -4,7 +4,10 @@ const ArticleSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
   url: { type: String, required: true },
-  source: { type: String },
+  source: {
+    id: { type: String },
+    name: { type: String },
+  },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 

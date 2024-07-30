@@ -1,6 +1,7 @@
 const express = require("express");
 const connectDB = require("./config");
 const userRoutes = require("./routes/user");
+const newsRoutes = require("./routes/news");
 const cors = require("cors");
 const socketio = require("socket.io");
 const http = require("http");
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/api/users", userRoutes);
+app.use("/api/news", newsRoutes);
 
 const PORT = process.env.PORT || 5000;
 

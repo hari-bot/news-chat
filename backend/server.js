@@ -24,6 +24,12 @@ app.use("/api/users", userRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/news", newsRoutes);
 
+app.post("/upload", fileUpload.single("file"), (req, res) => {
+  res.json({ filePath: `/uploads/${req.file.filename}` });
+});
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 io.on("connection", (socket) => {
   console.log("New WebSocket connection");
 

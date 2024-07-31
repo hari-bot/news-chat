@@ -8,6 +8,7 @@ const ArticleSchema = new mongoose.Schema({
     id: { type: String },
     name: { type: String },
   },
+  urlToImage: { type: String, required: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 

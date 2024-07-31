@@ -1,13 +1,15 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import NavBar from "../components/NavBar";
+import News from "../components/News";
 
 const HomePage = () => {
   const userName = useSelector((state) => state.user.userName);
 
   return (
     <div>
-      <h1>Welcome, {userName} !</h1>
-      <p>HomePage</p>
+      <NavBar />
+      <News />
     </div>
   );
 };

@@ -23,7 +23,7 @@ exports.fetchNews = async (req, res) => {
 };
 
 exports.saveArticle = async (req, res) => {
-  const { title, description, url, source } = req.body;
+  const { title, description, url, source, urlToImage } = req.body;
 
   try {
     const article = new Article({
@@ -31,6 +31,7 @@ exports.saveArticle = async (req, res) => {
       description,
       url,
       source,
+      urlToImage,
       user: req.user.id,
     });
 

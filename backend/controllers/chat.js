@@ -45,3 +45,13 @@ exports.getMessages = async (req, res) => {
     res.status(500).send("Server error");
   }
 };
+
+exports.getChatRooms = async (req, res) => {
+  try {
+    const chatRooms = await ChatRoom.find();
+    res.json(chatRooms);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+};

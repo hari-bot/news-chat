@@ -15,11 +15,17 @@ connectDB();
 
 const app = express();
 const server = http.createServer(app);
-const io = socketio(server);
+const io = socketio(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
+});
 
 app.use(express.json());
 app.use(cors());
 
+// Route handlers
 app.use("/api/users", userRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/news", newsRoutes);
@@ -30,22 +36,33 @@ app.post("/upload", fileUpload.single("file"), (req, res) => {
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// WebSocket connection
 io.on("connection", (socket) => {
   console.log("New WebSocket connection");
 
-  socket.on("joinRoom", ({ username, room }) => {
+  socket.on("joinRoom", ({ room, username }) => {
     socket.join(room);
+    socket.broadcast.to(room).emit("message", {
+      text: `${username} has joined the chat`,
+      room,
+      username,
+      isMine: false,
+    });
 
-    socket.broadcast
-      .to(room)
-      .emit("message", `${username} has joined the chat`);
-
-    socket.on("chatMessage", (msg) => {
-      io.to(room).emit("message", msg);
+    socket.on("sendMessage", (message) => {
+      io.to(message.room).emit("message", {
+        ...message,
+        isMine: false,
+      });
     });
 
     socket.on("disconnect", () => {
-      io.to(room).emit("message", `${username} has left the chat`);
+      io.to(room).emit("message", {
+        text: `${username} has left the chat`,
+        room,
+        username,
+        isMine: false,
+      });
     });
   });
 });

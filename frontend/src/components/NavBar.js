@@ -118,7 +118,7 @@ const NavBar = () => {
             </a>
             <a
               className="flex items-center gap-x-2 font-medium hover:text-blue-400 focus:outline-none"
-              href="/news"
+              href="/home"
             >
               <FontAwesomeIcon icon={faNewspaper} />
               News

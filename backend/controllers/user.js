@@ -22,7 +22,9 @@ exports.register = async (req, res) => {
     const payload = {
       user: {
         id: user.id,
-        name: user.username, // Include the username in the payload
+        name: user.username,
+        email: user.email,
+        description: user.description,
       },
     };
 
@@ -32,7 +34,12 @@ exports.register = async (req, res) => {
       { expiresIn: "1h" },
       (err, token) => {
         if (err) throw err;
-        res.json({ token, name: user.username }); // Send the username along with the token
+        res.json({
+          token,
+          name: user.username,
+          email: user.email,
+          description: user.description,
+        });
       }
     );
   } catch (err) {
@@ -61,6 +68,8 @@ exports.login = async (req, res) => {
       user: {
         id: user.id,
         name: user.username,
+        email: user.email,
+        description: user.description,
       },
     };
 
@@ -70,9 +79,38 @@ exports.login = async (req, res) => {
       { expiresIn: "1h" },
       (err, token) => {
         if (err) throw err;
-        res.json({ token, name: user.username });
+        res.json({
+          token,
+          name: user.username,
+          email: user.email,
+          description: user.description,
+        });
       }
     );
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+};
+
+exports.updateBio = async (req, res) => {
+  const { newBio } = req.body;
+
+  try {
+    let user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.description = newBio;
+
+    await user.save();
+
+    res.json({
+      message: "Bio updated successfully",
+      description: user.description,
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");

@@ -4,6 +4,7 @@ import Auth from "./components/Auth";
 import "./index.css";
 import HomePage from "./pages/HomePage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ProfilePage from "./pages/ProfilePage";
 
 const App = () => {
   return (
@@ -15,6 +16,14 @@ const App = () => {
           element={
             <ProtectedRoute>
               <HomePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />

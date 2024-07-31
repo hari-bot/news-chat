@@ -22,6 +22,7 @@ exports.register = async (req, res) => {
     const payload = {
       user: {
         id: user.id,
+        name: user.username, // Include the username in the payload
       },
     };
 
@@ -31,7 +32,7 @@ exports.register = async (req, res) => {
       { expiresIn: "1h" },
       (err, token) => {
         if (err) throw err;
-        res.json({ token });
+        res.json({ token, name: user.username }); // Send the username along with the token
       }
     );
   } catch (err) {
@@ -59,6 +60,7 @@ exports.login = async (req, res) => {
     const payload = {
       user: {
         id: user.id,
+        name: user.username,
       },
     };
 
@@ -68,7 +70,7 @@ exports.login = async (req, res) => {
       { expiresIn: "1h" },
       (err, token) => {
         if (err) throw err;
-        res.json({ token });
+        res.json({ token, name: user.username });
       }
     );
   } catch (err) {

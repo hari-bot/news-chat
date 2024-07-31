@@ -1,20 +1,14 @@
-import { createStore, combineReducers, applyMiddleware } from "redux";
-import thunk from "redux-thunk";
-import { composeWithDevTools } from "redux-devtools-extension";
-import { userLoginReducer, userRegisterReducer } from "./reducers/userReducers";
-import { chatReducer } from "./reducers/chatReducers";
-import { newsReducer } from "./reducers/newsReducers";
+import { configureStore } from "@reduxjs/toolkit";
+import userReducer from "./features/userSlice";
+import chatReducer from "./features/chatSlice";
+import newsReducer from "./features/newsSlice";
 
-const rootReducer = combineReducers({
-  userLogin: userLoginReducer,
-  userRegister: userRegisterReducer,
-  chat: chatReducer,
-  news: newsReducer,
+const store = configureStore({
+  reducer: {
+    user: userReducer,
+    chat: chatReducer,
+    news: newsReducer,
+  },
 });
-
-const store = createStore(
-  rootReducer,
-  composeWithDevTools(applyMiddleware(thunk))
-);
 
 export default store;

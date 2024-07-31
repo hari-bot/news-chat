@@ -11,9 +11,22 @@ const Chat = () => {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const dispatch = useDispatch();
   const { messages, chatRooms } = useSelector((state) => state.chat);
-  const [username, setUsername] = useState(""); // Add a username state
+  const username = useSelector((state) => state.user.userName);
 
-  // Fetch chat rooms
+  useEffect(() => {
+    fetchChatRooms();
+
+    socket.on("message", (newMessage) => {
+      dispatch(addMessage(newMessage));
+    });
+
+    console.log(messages);
+
+    return () => {
+      socket.off("message");
+    };
+  }, [dispatch]);
+
   const fetchChatRooms = async () => {
     try {
       const response = await axios.get(
@@ -25,21 +38,6 @@ const Chat = () => {
     }
   };
 
-  useEffect(() => {
-    const name = prompt("Enter your username:"); // Ask user for their username
-    setUsername(name);
-    fetchChatRooms();
-
-    socket.on("message", (newMessage) => {
-      dispatch(addMessage(newMessage));
-    });
-
-    return () => {
-      socket.off("message");
-    };
-  }, [dispatch]);
-
-  // Handle room change
   const handleRoomChange = (room) => {
     setSelectedRoom(room);
     socket.emit("joinRoom", { room: room._id, username });
@@ -47,7 +45,12 @@ const Chat = () => {
 
   const sendMessage = () => {
     if (selectedRoom && message.trim()) {
-      const newMessage = { text: message, room: selectedRoom._id, username };
+      const newMessage = {
+        text: message,
+        room: selectedRoom._id,
+        username,
+        isMine: true,
+      };
       socket.emit("sendMessage", newMessage);
       setMessage("");
     } else {
@@ -59,9 +62,18 @@ const Chat = () => {
     const newRoom = prompt("Enter the name for the new room:");
     if (newRoom) {
       try {
-        await axios.post("http://localhost:5000/api/chats/chatroom", {
-          name: newRoom,
-        });
+        const token = localStorage.getItem("token");
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+
+        await axios.post(
+          "http://localhost:5000/api/chats/chatroom",
+          { name: newRoom },
+          config
+        );
         fetchChatRooms();
       } catch (error) {
         console.error("Failed to create room:", error);
@@ -74,11 +86,11 @@ const Chat = () => {
       {/* Sidebar */}
       <div className="w-1/4 bg-white border-r border-gray-300">
         {/* Sidebar Header */}
-        <header className="p-4 border-b border-gray-300 flex justify-between items-center bg-indigo-600 text-white">
+        <header className="p-4 border-b border-gray-300 flex justify-between items-center bg-gray-900 text-white">
           <h1 className="text-2xl font-semibold">Chat Rooms</h1>
           <button
             onClick={handleCreateRoom}
-            className="text-white bg-indigo-500 px-4 py-2 rounded-md"
+            className="text-white bg-gray-500 px-4 py-2 rounded-md"
           >
             Create Room
           </button>
@@ -94,7 +106,7 @@ const Chat = () => {
             >
               <div className="w-12 h-12 bg-gray-300 rounded-full mr-3">
                 <img
-                  src="https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+                  src={`https://placehold.co/200x/121211/ffffff.svg?text=${room.name[0]}&font=Lato`}
                   alt="Room Avatar"
                   className="w-12 h-12 rounded-full"
                 />
@@ -124,27 +136,40 @@ const Chat = () => {
               <div
                 key={index}
                 className={`flex mb-4 ${
-                  msg.username === username ? "justify-end" : ""
+                  msg.username === username ? "justify-end" : "justify-start"
                 }`}
               >
+                {/* If the message is from someone else, display the user's avatar */}
+                {msg.username !== username && (
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center mr-2">
+                    <img
+                      src={
+                        msg.avatarUrl ||
+                        `https://placehold.co/200x/4f4f4d/ffffff.svg?text=${msg.username[0]}&font=Lato`
+                      }
+                      alt="User Avatar"
+                      className="w-8 h-8 rounded-full"
+                    />
+                  </div>
+                )}
                 <div
-                  className={`flex max-w-96 p-3 rounded-lg ${
-                    msg.username === username
-                      ? "bg-indigo-500 text-white"
-                      : "bg-white text-gray-700"
+                  className={`flex flex-col ${
+                    msg.username === username ? "items-end" : "items-start"
                   }`}
                 >
-                  <p>{msg.text}</p>
-                </div>
-                <div className="w-9 h-9 rounded-full flex items-center justify-center ml-2">
-                  <img
-                    src={
-                      msg.avatarUrl ||
-                      "https://placehold.co/200x/b7a8ff/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-                    }
-                    alt="User Avatar"
-                    className="w-8 h-8 rounded-full"
-                  />
+                  {/* Display username at the top for messages not sent by the current user */}
+                  {msg.username !== username && (
+                    <div className="font-bold mb-1 text-sm">{msg.username}</div>
+                  )}
+                  <div
+                    className={`flex max-w-96 p-3 rounded-lg ${
+                      msg.username === username
+                        ? "bg-gray-800 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                  >
+                    <p>{msg.text}</p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -162,7 +187,7 @@ const Chat = () => {
             />
             <button
               onClick={sendMessage}
-              className="bg-indigo-500 text-white px-4 py-2 rounded-md ml-2"
+              className="bg-gray-800 text-white px-4 py-2 rounded-md ml-2"
             >
               Send
             </button>
